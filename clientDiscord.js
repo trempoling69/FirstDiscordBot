@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, Events } = require('discord.js');
 require('dotenv').config();
 
 const play = require('./commands/play');
@@ -9,6 +9,7 @@ const {
   errorAvailibityMeetingRoom,
   errorUseCommandSupprimer,
   errorMessageGeneralSuppression,
+  errorGeneralRequest,
 } = require('./messageBuilder/errorMessage');
 const checkavailability = require('./service/checkAvailibility');
 const {
@@ -18,10 +19,13 @@ const {
   confirmMessageGetOneEventReactDelete,
   confirmationNotDeleteEvent,
   confirmDeleteEvent,
+  successModalCreateEvent,
 } = require('./messageBuilder/successMessage');
 const postEvent = require('./service/postEvent');
 const getOneEvent = require('./service/getOneEvent');
 const deleteEvent = require('./service/deleteEvent');
+const createEvent = require('./commands/createEvent');
+const help = require('./commands/help');
 
 const client = new Client({
   intents: [
@@ -38,6 +42,9 @@ client.commands = new Collection();
 
 client.commands.set(play.data.name, play);
 client.commands.set(getevent.data.name, getevent);
+client.commands.set(createEvent.data.name, createEvent);
+client.commands.set(help.data.name, help);
+
 client.on('ready', () => {
   console.log('Félicitations, votre bot Discord a été correctement initialisé !');
 });
@@ -151,60 +158,71 @@ client.on('messageCreate', async (message) => {
     const id_event = args[0];
     const event = await getOneEvent(id_event);
     if (event.status !== 200) {
-      const error = errorMessageGeneralSuppression(id_event, "lors de la récupération de l'évènement", event.error);
-      return message.channel.send({ embeds: [error] });
-    } else {
-      const eventToDelete = event.event;
-      let company;
-      if (eventToDelete.colorId === '4') {
-        company = 'AKANEMA';
-      } else if (eventToDelete.colorId === '6') {
-        company = 'UNIVR';
-      } else {
-        company = 'N/D';
-      }
-      const msg = confirmMessageGetOneEventReactDelete(
-        id_event,
-        eventToDelete.summary,
-        eventToDelete.description,
-        eventToDelete.start.dateTime,
-        eventToDelete.end.dateTime,
-        company,
-        eventToDelete.htmlLink
+      const error = errorGeneralRequest(
+        "lors de la récupération de l'évènement",
+        `Je ne suis pas parvenu à récupérer l'évènement défini par l'id : ${id_event}`,
+        event.error
       );
-      const collectorFilter = (reaction, user) => {
-        return ['✅', '❌'].includes(reaction.emoji.name) && user.id === message.author.id;
-      };
-      message.channel.send({ embeds: [msg] }).then((m) => {
-        messageToDelete.push(m.id);
-        Promise.all([m.react('✅'), m.react('❌')]).then(() => {
-          m.awaitReactions({ filter: collectorFilter, max: 1, time: 60000, errors: ['time'] }).then(
-            async (collected) => {
-              const reaction = collected.first();
-              if (reaction.emoji.name == '✅') {
-                const deleteResult = await deleteEvent(id_event);
-                if (deleteResult.status === 204) {
-                  const msg = confirmDeleteEvent(eventToDelete.start.dateTime);
-                  messageToDelete.push(message.id);
-                  message.channel.bulkDelete(messageToDelete, true);
-                  message.channel.send({ embeds: [msg] });
-                } else {
-                  const msg = errorMessageGeneralSuppression(
-                    id_event,
-                    "durant la suppression de l'évènement",
-                    deleteResult.error
-                  );
-                  message.channel.send({ embeds: [msg] });
-                }
-              } else {
-                const msg = confirmationNotDeleteEvent();
-                message.channel.send({ embeds: [msg] });
-              }
+      return message.channel.send({ embeds: [error] });
+    }
+    const eventToDelete = event.event;
+    let company;
+    if (eventToDelete.colorId === '4') {
+      company = 'AKANEMA';
+    } else if (eventToDelete.colorId === '6') {
+      company = 'UNIVR';
+    } else {
+      company = 'N/D';
+    }
+
+    let eventToDeleteStartDate;
+    let eventToDeleteEndDate;
+    if (eventToDelete.start.dateTime === undefined) {
+      eventToDeleteStartDate = eventToDelete.start.date;
+      eventToDeleteEndDate = eventToDelete.end.date;
+    } else {
+      eventToDeleteStartDate = eventToDelete.start.dateTime;
+      eventToDeleteEndDate = eventToDelete.end.dateTime;
+    }
+    const msg = confirmMessageGetOneEventReactDelete(
+      id_event,
+      eventToDelete.summary,
+      eventToDelete.description,
+      eventToDeleteStartDate,
+      eventToDeleteEndDate,
+      company,
+      eventToDelete.htmlLink
+    );
+    const collectorFilter = (reaction, user) => {
+      return ['✅', '❌'].includes(reaction.emoji.name) && user.id === message.author.id;
+    };
+    message.channel.send({ embeds: [msg] }).then((m) => {
+      messageToDelete.push(m.id);
+      Promise.all([m.react('✅'), m.react('❌')]).then(() => {
+        m.awaitReactions({ filter: collectorFilter, max: 1, time: 60000, errors: ['time'] }).then(async (collected) => {
+          const reaction = collected.first();
+          if (reaction.emoji.name == '✅') {
+            const deleteResult = await deleteEvent(id_event);
+            if (deleteResult.status === 204) {
+              const msg = confirmDeleteEvent(eventToDeleteStartDate);
+              messageToDelete.push(message.id);
+              message.channel.bulkDelete(messageToDelete, true);
+              message.channel.send({ embeds: [msg] });
+            } else {
+              const msg = errorGeneralRequest(
+                "durant la suppression de l'évènement",
+                `Impossible de supprimer l'évènement défini par l'id : ${id_event}. code erreur : ${deleteResult.status}`,
+                deleteResult.error
+              );
+              message.channel.send({ embeds: [msg] });
             }
-          );
+          } else {
+            const msg = confirmationNotDeleteEvent();
+            message.channel.send({ embeds: [msg] });
+          }
         });
       });
-    }
+    });
   }
 });
 
@@ -215,7 +233,78 @@ client.on('interactionCreate', async (interaction) => {
     await play.execute(interaction);
   } else if (interaction.commandName === 'getevent') {
     await getevent.execute(interaction);
+  } else if (interaction.commandName === 'create') {
+    await createEvent.execute(interaction);
+  } else if (interaction.commandName === 'help') {
+    await help.execute(interaction);
   }
 });
 
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isModalSubmit()) return;
+  if (interaction.customId === 'createEventModal') {
+    const startDateString = interaction.fields.getTextInputValue('EventStartDate');
+    const endDateString = interaction.fields.getTextInputValue('EventEndDate');
+    const title = interaction.fields.getTextInputValue('EventTitle');
+    const description = interaction.fields.getTextInputValue('EventDescription');
+    const company = interaction.fields.getTextInputValue('EventCompany');
+    const startDate = new Date(startDateString);
+    const endDate = new Date(endDateString);
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      const error = errorFormatDateReservation;
+      return interaction.reply({ embeds: [error] });
+    }
+    const availibility = await checkavailability(startDate, endDate);
+    if (!availibility) {
+      const error = errorAvailibityMeetingRoom;
+      return interaction.reply({ embeds: [error] });
+    }
+    const collectorFilter = (reaction, user) => {
+      return ['✅', '❌'].includes(reaction.emoji.name) && user.id === interaction.user.id;
+    };
+    const askValidation = successModalCreateEvent(startDate, endDate, title, description, company);
+    const validationMessage = await interaction.reply({ embeds: [askValidation], fetchReply: true });
+    await Promise.all([validationMessage.react('✅'), validationMessage.react('❌')]);
+    const collected = await validationMessage.awaitReactions({
+      filter: collectorFilter,
+      max: 1,
+      time: 60000,
+      errors: ['time'],
+    });
+    const reaction = collected.first();
+    if (reaction.emoji.name === '✅') {
+      let color;
+      if (company === 'AKANEMA') {
+        color = '1';
+      } else if (company === 'UNIVR') {
+        color = '2';
+      } else {
+        color = '3';
+      }
+      const postEventReponse = await postEvent(title, startDate, endDate, color, description);
+      if (postEventReponse.status === 200) {
+        interaction.channel.bulkDelete([validationMessage.id], true);
+        const confirmationMessage = confirmMessageSuccessPostEvent(
+          startDate,
+          endDate,
+          title,
+          description,
+          company,
+          postEventReponse.htmlLink
+        );
+        interaction.channel.send({ embeds: [confirmationMessage] });
+      } else {
+        const errorEmbed = errorGeneralRequest(
+          "Oups ! Un problème est survenu durant la requête de création d'évènement",
+          `Je suis moins smart que chatGPT alors si le code erreur te dis rien j'ai peur de pas être d'une grande aide. (code: ${postEventReponse.status})`,
+          postEventReponse.errorMessage
+        );
+        interaction.channel.send({ embeds: [errorEmbed] });
+      }
+    } else {
+      interaction.channel.send('Réservation de la réunion annulé');
+    }
+    console.log({ startDate, endDate, title, description, company });
+  }
+});
 module.exports = client;

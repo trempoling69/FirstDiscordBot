@@ -13,7 +13,6 @@ const checkavailability = async (start, end) => {
   const response = await calendar.freebusy.query({
     resource: freeBusyQuery,
   });
-  console.log(response.data.calendars);
   const busyTimeSlots = Object.values(response.data.calendars)[0].busy;
   console.log(busyTimeSlots);
   return busyTimeSlots.length === 0;

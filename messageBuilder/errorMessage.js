@@ -11,10 +11,6 @@ const errorFormatDateReservation = new EmbedBuilder()
   })
   .setThumbnail('https://www.shutterstock.com/image-vector/error-icon-260nw-696697762.jpg')
   .addFields({
-    name: "Rappel de l'utilisation de la commande",
-    value: '!reservation <DateDebut> <DateFin>',
-  })
-  .addFields({
     name: 'Rappel sur le format de date',
     value: 'Les dates doivent être au format AAAA-MM-JJTHH:MM:SS',
   })
@@ -115,10 +111,35 @@ const errorMessageGeneralSuppression = (id, errorType, errorMessage) => {
     })
     .setTimestamp();
 };
+
+const errorGeneralRequest = (errorType, errorDescription, errorMessage) => {
+  return new EmbedBuilder()
+    .setTitle(`Mince ! Un problème est servenue ${errorType}`)
+    .setDescription(`${errorDescription}`)
+    .setColor(0xff0000)
+    .setAuthor({
+      name: 'Robot pas content',
+      iconURL: process.env.LINK_AVATAR_AUTOR,
+    })
+    .setThumbnail('https://www.shutterstock.com/image-vector/error-icon-260nw-696697762.jpg')
+    .addFields(
+      { name: "Voici l'erreur renvoyé par notre ami Google", value: `${errorMessage}` },
+      {
+        name: 'Info',
+        value: 'Si vous avez un problème avec la syntaxe de la commande vérifiez cela avec la commande **/help**',
+      }
+    )
+    .setFooter({
+      text: 'Erreur de requête',
+      iconURL: process.env.LINK_AVATAR_AUTOR,
+    })
+    .setTimestamp();
+};
 module.exports = {
   errorFormatDateReservation,
   errorUseCommandReservation,
   errorAvailibityMeetingRoom,
   errorUseCommandSupprimer,
   errorMessageGeneralSuppression,
+  errorGeneralRequest,
 };

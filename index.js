@@ -5,11 +5,7 @@ const CLIENT_ID = process.env.CLIENT_ID_DISCORD;
 const GUILD_ID = process.env.GUILD_ID_DISCORD;
 
 const client = require('./clientDiscord');
-const postEvent = require('./service/postEvent');
-const deleteEvent = require('./service/deleteEvent');
-const getOneEvent = require('./service/getOneEvent');
 const rest = new REST({ version: '10' }).setToken(token);
-
 // postEvent(
 //   'teggst',
 //   '2023-06-18T12:30:00',

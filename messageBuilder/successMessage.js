@@ -167,6 +167,38 @@ const confirmDeleteEvent = (date) => {
       iconURL: process.env.LINK_AVATAR_AUTOR,
     });
 };
+
+const successModalCreateEvent = (startDate, endDate, title, description, company) => {
+  return new EmbedBuilder()
+    .setTitle('Créer une réunion')
+    .setColor(0x05b200)
+    .setAuthor({
+      name: 'Maitre de la salle',
+      iconURL: process.env.LINK_AVATAR_AUTOR,
+    })
+    .setDescription('Vous venez de réaliser une demande pour reserver la salle de réunion')
+    .setThumbnail(
+      'https://www.shutterstock.com/image-vector/shield-protection-security-icon-vector-260nw-1410260336.jpg'
+    )
+    .addFields(
+      { name: 'Date de début', value: `${startDate.toLocaleString()}`, inline: true },
+      { name: 'Date de fin', value: `${endDate.toLocaleString()}`, inline: true }
+    )
+    .addFields(
+      { name: 'Nom de la réunion', value: `${title}`, inline: true },
+      { name: 'Description de la réunion', value: `${description}`, inline: true },
+      { name: 'Entreprise', value: `${company}`, inline: true }
+    )
+    .addFields({
+      name: 'Dernière chose',
+      value: 'Réagissez avec ✅ pour valider la réservation et avec ❌ pour annuler la reservation',
+    })
+    .setFooter({
+      text: 'Reservation salle réunion',
+      iconURL: process.env.LINK_AVATAR_AUTOR,
+    })
+    .setTimestamp();
+};
 module.exports = {
   descriptionMeetingGetReact,
   initilisationMessageGetTitleDescription,
@@ -174,4 +206,5 @@ module.exports = {
   confirmMessageGetOneEventReactDelete,
   confirmationNotDeleteEvent,
   confirmDeleteEvent,
+  successModalCreateEvent,
 };
