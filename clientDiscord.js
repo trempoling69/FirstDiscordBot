@@ -19,6 +19,7 @@ const {
   confirmationNotDeleteEvent,
   confirmDeleteEvent,
   successModalCreateEvent,
+  successDismissEvent,
 } = require('./messageBuilder/successMessage');
 const postEvent = require('./service/postEvent');
 const getOneEvent = require('./service/getOneEvent');
@@ -237,7 +238,7 @@ client.on('interactionCreate', async (interaction) => {
     await createEvent.execute(interaction);
   } else if (interaction.commandName === 'help') {
     await help.execute(interaction);
-  } else if (interaction.commandName === 'supprimer') {
+  } else if (interaction.commandName === 'delete') {
     await deleteEvent.execute(interaction);
   }
 });
@@ -257,7 +258,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return interaction.reply({ embeds: [error] });
     }
     const availibility = await checkavailability(startDate, endDate);
-    if (!availibility) {
+    if (availibility.status !== 200) {
+      const errorRequest = errorGeneralRequest(
+        'durant la requête de vérification de disponibilité',
+        `La requête n'a pas pu aboutir correctement, elle a renvoyé le code erreur ${availibility.status}`,
+        availibility.error
+      );
+      return interaction.reply({ embeds: [errorRequest] });
+    }
+    if (!availibility.availibility) {
       const error = errorAvailibityMeetingRoom;
       return interaction.reply({ embeds: [error] });
     }
@@ -297,14 +306,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
         interaction.channel.send({ embeds: [confirmationMessage] });
       } else {
         const errorEmbed = errorGeneralRequest(
-          "Oups ! Un problème est survenu durant la requête de création d'évènement",
+          "durant la requête de création d'évènement",
           `Je suis moins smart que chatGPT alors si le code erreur te dis rien j'ai peur de pas être d'une grande aide. (code: ${postEventReponse.status})`,
           postEventReponse.errorMessage
         );
         interaction.channel.send({ embeds: [errorEmbed] });
       }
     } else {
-      interaction.channel.send('Réservation de la réunion annulé');
+      interaction.channel.bulkDelete([validationMessage.id], true);
+      const confirmNoReservation = successDismissEvent();
+      interaction.channel.send({ embeds: [confirmNoReservation] });
     }
   }
 });

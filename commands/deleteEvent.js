@@ -10,7 +10,7 @@ const deleteEventRequest = require('../service/deleteEvent');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('supprimer')
+    .setName('delete')
     .setDescription('Supprimer un évènement avec son ID')
     .addStringOption((option) =>
       option.setName('id_event').setDescription("ID google caldendar de l'évènement à supprimer").setRequired(true)

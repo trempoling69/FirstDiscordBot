@@ -5,9 +5,8 @@ require('dotenv').config();
 const postEvent = async (summary, start, end, colorId, description) => {
   const response = { status: null, htmlLink: null, errorMessage: null };
   try {
-    // const isAvailable = await checkavailability(start, end);
-    const isAvailable = true;
-    if (isAvailable) {
+    const isAvailable = await checkavailability(start, end);
+    if (isAvailable.availibility) {
       const event = {
         summary: summary,
         start: {

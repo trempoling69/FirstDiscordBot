@@ -9,7 +9,7 @@ module.exports = {
       .setAuthor({
         name: 'Maitre de la salle',
         iconURL: process.env.LINK_AVATAR_AUTOR,
-      })
+      }) 
       .setTitle('Guide des commandes')
       .setDescription('Je vais vous montrer tout ce que vous pouvez faire avec moi')
       .addFields(
@@ -24,7 +24,7 @@ module.exports = {
             "Cette commande permet d'afficher tous les évènements à venir. L'option peut être Jour, Semaine ou All time. **Jour** permet d'obtenir les event dans la journée, **semaine** dans la semaine et **all time** tous les évènements sans limite de temps.",
         },
         {
-          name: '!supprimer {id_event}',
+          name: '/delete {id_event}',
           value:
             "Cette commande permet de supprimer un évènement. Il faut entrer un id d'évènement et je me charge de le supprimer",
         },

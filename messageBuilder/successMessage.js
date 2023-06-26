@@ -199,6 +199,23 @@ const successModalCreateEvent = (startDate, endDate, title, description, company
     })
     .setTimestamp();
 };
+const successDismissEvent = () => {
+  return new EmbedBuilder()
+    .setTitle('Annulation de la création')
+    .setColor(0x05b200)
+    .setAuthor({
+      name: 'Maitre de la salle',
+      iconURL: process.env.LINK_AVATAR_AUTOR,
+    })
+    .setDescription(
+      "Vous venez d'annuler votre demande de reservation pour la salle de réunion. Aucun créneau n'a été reservé. Vous pouvez réessayer ou vaquer à vos occupations."
+    )
+    .setFooter({
+      text: 'Annulation reservation salle réunion',
+      iconURL: process.env.LINK_AVATAR_AUTOR,
+    })
+    .setTimestamp();
+};
 module.exports = {
   descriptionMeetingGetReact,
   initilisationMessageGetTitleDescription,
@@ -207,4 +224,5 @@ module.exports = {
   confirmationNotDeleteEvent,
   confirmDeleteEvent,
   successModalCreateEvent,
+  successDismissEvent,
 };
