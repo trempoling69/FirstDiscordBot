@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { getEventsWithTimeMax, getEventsLifeTime } = require('../service/getEvents');
-const asciiTable = require('ascii-table');
+const chunkSize = 5;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -39,8 +39,8 @@ module.exports = {
     }
     if (events.length) {
       const eventChunks = chunkEvents(events);
-      eventChunks.forEach((eventChunk) => {
-        const reponse = formatEventChunk(eventChunk);
+      eventChunks.forEach((eventChunk, index) => {
+        const reponse = formatEventChunk(eventChunk, index);
         interaction.followUp(reponse);
       });
     } else {
@@ -50,7 +50,6 @@ module.exports = {
 };
 
 const chunkEvents = (events) => {
-  const chunkSize = 5;
   const eventChunks = [];
   for (let i = 0; i < events.length; i += chunkSize) {
     const chunk = events.slice(i, i + chunkSize);
@@ -59,11 +58,11 @@ const chunkEvents = (events) => {
   return eventChunks;
 };
 
-const formatEventChunk = (eventChunk) => {
-  let response;
-  const table = new asciiTable('Liste des évènements');
-  table.setHeading('Titre', 'Date de début', 'Date de fin', 'entreprise', 'id évènement');
-  eventChunk.forEach((event) => {
+const formatEventChunk = (eventChunk, chunkNumber) => {
+  let eventList = 'Liste des événements :\n\n';
+  const multiplier = chunkNumber * chunkSize;
+  eventChunk.forEach((event, index) => {
+    const eventIndex = multiplier + index + 1;
     let start;
     let end;
     if (event.start.dateTime === undefined) {
@@ -81,9 +80,13 @@ const formatEventChunk = (eventChunk) => {
     } else {
       company = 'N/D';
     }
-    table.addRow(event.summary, start, end, company, event.id);
+    const eventText =
+      `${eventIndex}. [${event.id}] - ${event.summary}\n` +
+      `   - Date de début : ${start}\n` +
+      `   - Date de fin : ${end}\n` +
+      `   - Entreprise : ${company}\n\n`;
+
+    eventList += eventText;
   });
-  response = 'Voici les évènement à venir :\n```' + table.toString() + '```';
-  return response;
+  return eventList;
 };
-// /opt/alt/alt-nodejs16/root/usr/bin/node ~/botDiscordDeploy/index.js

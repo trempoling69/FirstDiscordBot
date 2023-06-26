@@ -6,16 +6,6 @@ const GUILD_ID = process.env.GUILD_ID_DISCORD;
 
 const client = require('./clientDiscord');
 const rest = new REST({ version: '10' }).setToken(token);
-// postEvent(
-//   'teggst',
-//   '2023-06-18T12:30:00',
-//   '2023-06-18T13:30:00',
-//   '6',
-//   'ce nouvelle évènement est pour la salle de réunion'
-// );
-//4 rouge
-//6 orange
-// getOneEvent('33sn7qqvdmoa8ruhg7bjlh8290');
 
 (async () => {
   try {

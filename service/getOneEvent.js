@@ -12,7 +12,6 @@ const getOneEvent = async (id) => {
     event.status = err.code;
     event.error = err.errors[0].message;
   }
-  console.log(event);
   return event;
 };
 

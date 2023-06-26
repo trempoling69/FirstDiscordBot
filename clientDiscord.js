@@ -8,7 +8,6 @@ const {
   errorUseCommandReservation,
   errorAvailibityMeetingRoom,
   errorUseCommandSupprimer,
-  errorMessageGeneralSuppression,
   errorGeneralRequest,
 } = require('./messageBuilder/errorMessage');
 const checkavailability = require('./service/checkAvailibility');
@@ -23,9 +22,10 @@ const {
 } = require('./messageBuilder/successMessage');
 const postEvent = require('./service/postEvent');
 const getOneEvent = require('./service/getOneEvent');
-const deleteEvent = require('./service/deleteEvent');
+const deleteEventRequest = require('./service/deleteEvent');
 const createEvent = require('./commands/createEvent');
 const help = require('./commands/help');
+const deleteEvent = require('./commands/deleteEvent');
 
 const client = new Client({
   intents: [
@@ -44,6 +44,7 @@ client.commands.set(play.data.name, play);
 client.commands.set(getevent.data.name, getevent);
 client.commands.set(createEvent.data.name, createEvent);
 client.commands.set(help.data.name, help);
+client.commands.set(deleteEvent.data.name, deleteEvent);
 
 client.on('ready', () => {
   console.log('Félicitations, votre bot Discord a été correctement initialisé !');
@@ -116,7 +117,6 @@ client.on('messageCreate', async (message) => {
                 const reaction = collected.first();
                 let color;
                 let company;
-                console.log('react');
                 if (reaction.emoji.name === '🔴') {
                   color = '4';
                   company = 'AKANEMA';
@@ -202,7 +202,7 @@ client.on('messageCreate', async (message) => {
         m.awaitReactions({ filter: collectorFilter, max: 1, time: 60000, errors: ['time'] }).then(async (collected) => {
           const reaction = collected.first();
           if (reaction.emoji.name == '✅') {
-            const deleteResult = await deleteEvent(id_event);
+            const deleteResult = await deleteEventRequest(id_event);
             if (deleteResult.status === 204) {
               const msg = confirmDeleteEvent(eventToDeleteStartDate);
               messageToDelete.push(message.id);
@@ -237,6 +237,8 @@ client.on('interactionCreate', async (interaction) => {
     await createEvent.execute(interaction);
   } else if (interaction.commandName === 'help') {
     await help.execute(interaction);
+  } else if (interaction.commandName === 'supprimer') {
+    await deleteEvent.execute(interaction);
   }
 });
 
@@ -304,7 +306,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     } else {
       interaction.channel.send('Réservation de la réunion annulé');
     }
-    console.log({ startDate, endDate, title, description, company });
   }
 });
 module.exports = client;

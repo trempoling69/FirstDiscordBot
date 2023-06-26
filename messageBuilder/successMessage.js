@@ -155,7 +155,7 @@ const confirmDeleteEvent = (date) => {
       iconURL: process.env.LINK_AVATAR_AUTOR,
     })
     .setColor(0x05b200)
-    .setTitle(`Confirmation de suppression de l'évènement du ${new Date(date).toLocaleString()}`)
+    .setTitle(`Confirmation de suppression de l'évènement du ${date}`)
     .setThumbnail(process.env.LINK_AVATAR_AUTOR)
     .addFields(
       { name: 'Note', value: "L'évènement a été supprimé avec succès", inline: true },

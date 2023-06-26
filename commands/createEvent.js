@@ -13,7 +13,6 @@ module.exports = {
         .addChoices({ name: 'AKANEMA', value: 'AKANEMA' }, { name: 'UNIVR', value: 'UNIVR' })
     ),
   async execute(interaction) {
-    console.log('ok');
     const company = interaction.options.getString('company');
     const modal = new ModalBuilder().setCustomId('createEventModal').setTitle('Réserver la salle');
     modal.companyValue = company;

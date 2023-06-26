@@ -82,35 +82,13 @@ const errorUseCommandSupprimer = new EmbedBuilder()
   .setThumbnail('https://www.shutterstock.com/image-vector/error-icon-260nw-696697762.jpg')
   .addFields({
     name: "Rappel de l'utilisation de la commande",
-    value: '!reservation <id_evenement>',
+    value: '!supprimer <id_evenement>',
   })
   .setFooter({
     text: 'Erreur de commande',
     iconURL: process.env.LINK_AVATAR_AUTOR,
   })
   .setTimestamp();
-
-const errorMessageGeneralSuppression = (id, errorType, errorMessage) => {
-  return new EmbedBuilder()
-    .setTitle(`Mince ! Un problème est servenue ${errorType}`)
-    .setDescription(`Je ne suis pas parvenu à récupérer l'évènement défini par l'id : ${id}`)
-    .setColor(0xff0000)
-    .setAuthor({
-      name: 'Robot pas content',
-      iconURL: process.env.LINK_AVATAR_AUTOR,
-    })
-    .setThumbnail('https://www.shutterstock.com/image-vector/error-icon-260nw-696697762.jpg')
-    .addFields({
-      name: "Rappel de l'utilisation de la commande",
-      value: '!reservation <id_evenement>',
-    })
-    .addFields({ name: "Voici l'erreur renvoyer par notre ami Google", value: `${errorMessage}` })
-    .setFooter({
-      text: 'Erreur de requête',
-      iconURL: process.env.LINK_AVATAR_AUTOR,
-    })
-    .setTimestamp();
-};
 
 const errorGeneralRequest = (errorType, errorDescription, errorMessage) => {
   return new EmbedBuilder()
@@ -140,6 +118,5 @@ module.exports = {
   errorUseCommandReservation,
   errorAvailibityMeetingRoom,
   errorUseCommandSupprimer,
-  errorMessageGeneralSuppression,
   errorGeneralRequest,
 };

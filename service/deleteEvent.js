@@ -1,7 +1,7 @@
 const calendar = require('../service/googleCalendar.js');
 require('dotenv').config();
 
-const deleteEvent = async (id) => {
+const deleteEventRequest = async (id) => {
   const response = { status: null, error: null };
   try {
     const resp = await calendar.events.delete({ calendarId: process.env.CALENDAR_ID, eventId: id });
@@ -11,7 +11,6 @@ const deleteEvent = async (id) => {
     response.status = err.code;
     response.error = err.errors[0]?.message;
   }
-  console.log(response);
   return response;
 };
-module.exports = deleteEvent;
+module.exports = deleteEventRequest;
